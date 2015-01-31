@@ -4,7 +4,7 @@ Donate link: http://www.itsupportguides.com/
 Tags: gravity forms
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ Simply install and activate the plugin - no configuration required.
 1. The radio, checkbox and repeater list fields will now be automatically modified so that they meet the accessibility requirements.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fix php closing tag to resolve version number not appearing in WordPress Plugin Directory.
 
 = 1.0 =
 * First public release.
