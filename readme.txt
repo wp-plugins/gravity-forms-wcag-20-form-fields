@@ -29,7 +29,6 @@ Simply install and activate the plugin - no configuration required.
 1. This plugin requires the Gravity Forms plugin, installed and activated
 1. Install plugin from WordPress administration or upload folder to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in the WordPress administration
-1. Open the form you want to add an infobox to
 1. The radio, checkbox and repeater list fields will now be automatically modified so that they meet the accessibility requirements.
 
 == Changelog ==
