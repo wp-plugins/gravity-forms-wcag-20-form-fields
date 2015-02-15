@@ -4,15 +4,15 @@ Donate link: http://www.itsupportguides.com/
 Tags: gravity forms
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Extends the Gravity Forms plugin - modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
+Modifies Gravity Forms form fields and improves validation so that forms meet WCAG 2.0 accessibility requirements.
 
 == Description ==
 
-Extends the Gravity Forms plugin - modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
+Extends the Gravity Forms plugin - modifies form fields and improves validation so that forms meet WCAG 2.0 accessibility requirements.
 
 By default the radio, checkbox and repeater list fields in Gravity Forms do not meet the WCAG 2.0 accessibility requirements.
 
@@ -22,7 +22,7 @@ This is done by wrapping the fields in fieldsets, rather than having unattached 
 
 Simply install and activate the plugin - no configuration required.
 
-**Please note:** this plugin does not cover other aspects of accessibility, such as order and colour contrast.
+**Please note:** this plugin does not cover other aspects of accessibility, such as order and clear instructions. You will also need to ensure that your websites theme is accessible. 
 
 == Installation ==
 
@@ -32,6 +32,13 @@ Simply install and activate the plugin - no configuration required.
 1. The radio, checkbox and repeater list fields will now be automatically modified so that they meet the accessibility requirements.
 
 == Changelog ==
+
+= 1.1.0 =
+* Feature: added aria-describedby for date fields - providing screen reader users with the instructions on how to type into the field, for example 'must be dd/mm/yyyy format'
+* Feature: added screen reader only words for required fields - providing screen reader users with the word 'required' in addition to the default star
+* Feature: added aria-describedby for fields that have failed validation - making it easier for screen reader users to determine why a field has failed validation
+* Feature: improved validation message. Message now reads 'There were 2 errors found in the information you submitted.' and is followed by a list of each field that did not pass validation. Each item in the list is a clickable link, taking the user directly to the field.
+* Feature: added browser alert if form did not pass validation. If the form did not pass validation, the first thing the user should see or hear is ''There were 2 errors found in the information you submitted.' followed by the list of errors. When the user clicks past the alert the browsers focus is taken to the on screen validation message and links to errors. 
 
 = 1.0.3 =
 * Fix php closing tag to resolve version number not appearing in WordPress Plugin Directory.
