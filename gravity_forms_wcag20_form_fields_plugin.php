@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
-Description: Extends the Gravity Forms plugin. Modifies form fields and improves validation so that forms meet WCAG 2.0 accessibility requirements.
-Version: 1.1.0
+Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
+Version: 1.2.0
 Author: Adrian Gordon
 License: GPL2
 */
@@ -30,6 +30,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
         } // END __construct
 		
 		public static function change_validation_message($message, $form){
+		$referrer = $_SERVER['HTTP_REFERER'];
 		
 			foreach ( $form['fields'] as $field ) {
 				$failed[] = rgget("failed_validation", $field);
@@ -38,8 +39,15 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				$failed_message = rgget("validation_message", $field);
 				if ( $failed_field == 1) {
 				
-				$error .= '<li><a href="/?form_id='.wp_hash($form['id']).'#field_'.$form['id'].'_'.$field['id'].'">'.$field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]).'</a></li>';
+				$error .= '<li><a href="'.$referrer.'#field_'.$form['id'].'_'.$field['id'].'">'.$field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]).'</a></li>';
 				$errorAlert .= '\n\n'. $field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]);
+				
+				// replace <br> with new line 
+				$errorAlert =  str_replace(strtolower("<br>"),"\\n\\n",$errorAlert);
+				// replace <br/> with new line 
+				$errorAlert =  str_replace(strtolower("<br/>"),"\\n\\n",$errorAlert);
+				// replace <br /> with new line 
+				$errorAlert =  str_replace(strtolower("<br />"),"\\n\\n",$errorAlert);
 				}
 				
 			}
@@ -74,7 +82,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * Replaces field content for repeater lists - adds title to input fields using the column title
          */
 		public static function change_column_add_title_wcag($input, $input_info, $field, $text, $value, $form_id) {
-		if (!is_admin) {
+		if (!is_admin()) {
 			$input = str_replace("<input ","<input title='".$text."'",$input);
 		}
 		return $input;
@@ -91,8 +99,9 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		$field_label = rgar($field,"label");
 		$field_id = rgar($field,"id");
 			
-			//wrap checkbox, radio and multi-select fields in fieldset
-			if( ("checkbox" == $field_type ) || ("radio" == $field_type) || ("multiselect" == $field_type ) ){
+			//radio and checkbox fields in fieldset
+			if( ("checkbox" == $field_type ) || ("radio" == $field_type) ){
+			//wrap in fieldset
 				if ("true" == $field_required ) {
 					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				} else {
@@ -101,31 +110,53 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				$content .= "</fieldset>";
 			}
 			
-			//wrap list fields in fieldset
 			if(("list" == $field_type ) ){
+				$maxRow = intval(rgar($field, "maxRows"));
+				
+				//wrap list fields in fieldset
 				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."_shim' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				$content .= "</fieldset>";
+				
+				//remove shim input 
+				$content = str_replace("<input type='text' id='input_".$form_id."_".$field_id."_shim' style='position:absolute;left:-999em;' onfocus='jQuery( \"#field_".$form_id."_".$field_id." table tr td:first-child input\" ).focus();' />","",$content);
+				
+				//replace 'add another row' image with button
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png' class='add_list_item '  title='Add another row' alt='Add a row' onclick='gformAddListItem(this, ".$maxRow.")' style='cursor:pointer; margin:0 3px;' />","<button type='button' class='add_list_item'  title='Add another row' alt='Add a row' onclick='gformAddListItem(this, ".$maxRow.")'></button>",$content);
+				
+				//replace 'remove this row' image with button - if field is visible 
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='Remove this row' alt='Remove this row' class='delete_list_item' style='cursor:pointer; ' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button type='button' class='delete_list_item'  title='Remove this row' alt='Remove this row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
+				
+				//replace 'remove this row' image with button - if field is hidden 
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='Remove this row' alt='Remove this row' class='delete_list_item' style='cursor:pointer; visibility:hidden;' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button style='visibility:hidden;' type='button' class='delete_list_item'  title='Remove this row' alt='Remove this row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
 			}
 			
 			// add description for date field 
-			if(("date" == $field_type ) ){
+			if("date" == $field_type ){
 				if ( 'mdy' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be mm/dd/yyyy format</span>",$content);
+					$date_format = 'mm/dd/yyyy';
 				} else if ( 'dmy' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be dd/mm/yyyy format</span>",$content);
+					$date_format = 'dd/mm/yyyy';
 				} else if ( 'dmy_dash' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be dd-mm-yyyy format</span>",$content);
+					$date_format = 'dd-mm-yyyy';
 				} else if ( 'dmy_dot' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be dd.mm.yyyy format</span>",$content);
+					$date_format = 'dd.mm.yyyy';
 				} else if ( 'ymd_slash' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be yyyy/mm/dd format</span>",$content);
+					$date_format = 'yyyy/mm/dd';
 				} else if ( 'ymd_dash' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be yyyy-mm-dd format</span>",$content);
+					$date_format = 'yyyy-mm-dd';
 				} else if ( 'ymd_dot' == $field["dateFormat"]) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> must be yyyy.mm.dd format</span>",$content);
-				} else {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> use numbers to enter date</span>",$content);
-				}
+					$date_format = 'yyyy.mm.dd';
+				} 
+				
+				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - must be ".$date_format." format</span>",$content);
+				
+				// attach to aria-described-by
+				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
+			}
+			
+			// add description for website field 
+			if ("website" == $field_type ){
+				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - enter a valid website URL for example http://www.google.com</span>",$content);
 				
 				// attach to aria-described-by
 				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
@@ -135,10 +166,11 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			if("true" == $field_failed_valid ){
 				//add add aria-invalid='true' attribute to input
 				$content = str_replace(" name='input_"," aria-invalid='true' name='input_",$content);
-				//if aria-describedby attribute is already present
+				//if aria-describedby attribute not already present
 				if (strpos(strtolower($content),'aria-describedby') !== true)  {
 					$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_vmessage ",$content);
 				} else { 
+					// aria-describedby attribute is already present
 					$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_vmessage' name='input_",$content);
 				}
 				//add add class for aria-describedby error message
@@ -148,17 +180,19 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			//if field is required
 			if("true" == $field_required ){
 				//if HTML5 required attribute not already present
-				if (strpos(strtolower($content),'required') !== true	)  {
+				if (( strpos(strtolower($content),'required') !== true ) && ("checkbox" != $field_type ) )  {
 					//add HTML5 required attribute
 					$content = str_replace(" name='input_"," required name='input_",$content);
 				}
-				if (strpos(strtolower($content),"aria-required='true'") !== true)  {
+				if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) )  {
 					//add aria-required='true'
 					$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
 				}
 				//add screen reader only 'Required' message to asterisk
-				$content = str_replace("*</span>","*<span class='sr-only'> Required</span></span>",$content);
-			}			
+				$content = str_replace("*</span>"," * <span class='sr-only'> Required</span></span>",$content);
+			}
+			
+			
 		}
 		return $content;
 		} // END change_fields_content_wcag
@@ -167,32 +201,18 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * Place required scripts in the footer
          */
 		public function queue_scripts($form, $is_ajax) {
+		if (!is_admin()) {
 			add_action('wp_footer', array(&$this,'css_styles'));
+			}
 		} // END queue_scripts
 		
 		/*
          * CSS styles - remove border, margin and padding from fieldset
          */
 		public static function css_styles() {
-		?>
-				<style type="text/css">
-					.gfieldset {
-						border:none;
-						margin: 0;
-						padding: 0;
-					}
-					
-					.sr-only {
-					border: 0 none;
-					clip: rect(0px, 0px, 0px, 0px);
-					height: 1px;
-					margin: -1px;
-					overflow: hidden;
-					padding: 0;
-					position: absolute;
-					width: 1px;
-					}
-				</style> <?php
+			?>
+			<link rel="stylesheet" type="text/css" href="<?php echo plugins_url('gf_wcag20_form_fields.css', __FILE__);?>" media="all" />
+			<?php
 		}
 		
 		/*
