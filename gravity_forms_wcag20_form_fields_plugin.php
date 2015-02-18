@@ -98,11 +98,13 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		$field_failed_valid = rgar($field,"failed_validation");
 		$field_label = rgar($field,"label");
 		$field_id = rgar($field,"id");
+		$field_page = rgar($field,"pageNumber");
+		$current_page = GFFormDisplay::get_current_page( $form_id );
 			
 			//radio and checkbox fields in fieldset
 			if( ("checkbox" == $field_type ) || ("radio" == $field_type) ){
 			//wrap in fieldset
-				if ("true" == $field_required ) {
+				if (true == $field_required ) {
 					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				} else {
 					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
@@ -162,36 +164,38 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
 			}
 			
-			//if field has failed validation
-			if("true" == $field_failed_valid ){
-				//add add aria-invalid='true' attribute to input
-				$content = str_replace(" name='input_"," aria-invalid='true' name='input_",$content);
-				//if aria-describedby attribute not already present
-				if (strpos(strtolower($content),'aria-describedby') !== true)  {
-					$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_vmessage ",$content);
-				} else { 
-					// aria-describedby attribute is already present
-					$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_vmessage' name='input_",$content);
+			//validation for fields in page 
+			if ($current_page == $field_page) {
+				//if field has failed validation
+					if(true == $field_failed_valid ){
+					//add add aria-invalid='true' attribute to input
+					$content = str_replace(" name='input_"," aria-invalid='true' name='input_",$content);
+					//if aria-describedby attribute not already present
+					if (strpos(strtolower($content),'aria-describedby') !== true)  {
+						$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_vmessage ",$content);
+					} else { 
+						// aria-describedby attribute is already present
+						$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_vmessage' name='input_",$content);
+					}
+					//add add class for aria-describedby error message
+					$content = str_replace(" class='gfield_description validation_message'"," class='gfield_description validation_message' id='field_".$form_id."_".$field_id."_vmessage'",$content);
 				}
-				//add add class for aria-describedby error message
-				$content = str_replace(" class='gfield_description validation_message'"," class='gfield_description validation_message' id='field_".$form_id."_".$field_id."_vmessage'",$content);
-			}
-		
-			//if field is required
-			if("true" == $field_required ){
-				//if HTML5 required attribute not already present
-				if (( strpos(strtolower($content),'required') !== true ) && ("checkbox" != $field_type ) )  {
-					//add HTML5 required attribute
-					$content = str_replace(" name='input_"," required name='input_",$content);
-				}
-				if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) )  {
-					//add aria-required='true'
-					$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
-				}
-				//add screen reader only 'Required' message to asterisk
-				$content = str_replace("*</span>"," * <span class='sr-only'> Required</span></span>",$content);
-			}
 			
+				//if field is required
+				if(true == $field_required ){
+					//if HTML5 required attribute not already present
+					if (( strpos(strtolower($content),'required') !== true ) && ("checkbox" != $field_type ) )  {
+						//add HTML5 required attribute
+						$content = str_replace(" name='input_"," required name='input_",$content);
+					}
+					if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) )  {
+						//add aria-required='true'
+						$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
+					}
+					//add screen reader only 'Required' message to asterisk
+					$content = str_replace("*</span>"," * <span class='sr-only'> Required</span></span>",$content);
+				}
+			}
 			
 		}
 		return $content;
