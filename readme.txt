@@ -4,7 +4,7 @@ Donate link: http://www.itsupportguides.com/
 Tags: gravity forms
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ Extends the Gravity Forms plugin - modifies form fields and improves validation 
 **What does this plugin do?**
 
 * Wraps radio, checkbox and list (repeater) fields in a fieldset.
-* Improves form validation by displaying an alert message and on-page message that describes how many errors there were in the page. On-page message contains a list of the form fields with the errors, a description of the error and a link to the field.
+* Improves form validation by displaying an on-page message that describes how many errors there were in the page. The message contains a list of the form fields with the errors, a description of the error and a link to the field.
 * Adds aria-describedby attributes for date and website fields - providing clear instructions for screen reader users of what format is required for the field.
 * Adds HTML5 'required' attribute and aria-required='true' for required fields
 * Adds aria-describedby attributes for fields that have failed validation - providing clear instructions for screen reader users of what the field error is. Description used is the default validation message for the field, or if set, the validation message for the field.
@@ -54,11 +54,19 @@ If you're having troubles or even better know a solution, please leave a detaile
 
 == Screenshots ==
 
-1. Shows the alert message that is displayed when form page contains errors. Alert message describes how many errors there were on the page and a list of the fields and error.
-2. Shows the improved validation message that is displayed when the form page contains errors. Validation message describes how many errors there were on the page and a list of the fields and errors. Each error is a link to the field. This message gets the browsers 'focus' when it is loaded - allowing screen reader users easy access to the information.
-3. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
+1. Shows the improved validation message that is displayed when the form page contains errors. Validation message describes how many errors there were on the page and a list of the fields and errors. Each error is a link to the field. This message gets the browsers 'focus' when it is loaded - allowing screen reader users easy access to the information.
+2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.2.2 =
+
+* Enqueue stylesheet instead of directly printing to page.
+* Replace i18n slug with slug string instead of class reference.
+* Fix text strings for internationalization.
+* Fix bug with failing to be inserted.
+* Add ARIA live attribute to form validation error
+* Remove JS alert to avoid redundant notifications with ARIA
 
 = 1.2.1 =
 

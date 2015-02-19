@@ -2,12 +2,14 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.1
+Version: 1.2.2
 Author: Adrian Gordon
 License: GPL2
+Text Domain: gfwcag
 */
 
 add_action('admin_notices', array('ITSP_GF_WCAG20_Form_Fields', 'admin_warnings'), 20);
+load_plugin_textdomain( 'gfwcag', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 
 if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
     class ITSP_GF_WCAG20_Form_Fields
@@ -30,7 +32,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
         } // END __construct
 		
 		public static function change_validation_message($message, $form){
-		$referrer = $_SERVER['HTTP_REFERER'];
+			$referrer = $_SERVER['HTTP_REFERER'];
 		
 			foreach ( $form['fields'] as $field ) {
 				$failed[] = rgget("failed_validation", $field);
@@ -40,35 +42,28 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				if ( $failed_field == 1) {
 				
 				$error .= '<li><a href="'.$referrer.'#field_'.$form['id'].'_'.$field['id'].'">'.$field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]).'</a></li>';
-				$errorAlert .= '\n\n'. $field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]);
-				
-				// replace <br> with new line 
-				$errorAlert =  str_replace(strtolower("<br>"),"\\n\\n",$errorAlert);
-				// replace <br/> with new line 
-				$errorAlert =  str_replace(strtolower("<br/>"),"\\n\\n",$errorAlert);
-				// replace <br /> with new line 
-				$errorAlert =  str_replace(strtolower("<br />"),"\\n\\n",$errorAlert);
+
 				}
 				
 			}
 			
 			$length  = count( array_keys( $failed, "true" ));
-			$prompt .= "There ".(($length > 1) ? 'were':'was')." ". $length." ".(($length > 1) ? 'errors':'error')." found in the information you submitted.";
+			$prompt  = sprintf( _n( "There was %s error found in the information you submitted", "There were %s errors found in the information you submitted", $length, 'gfwcag' ), $length );
 			
 			$javascript = "<script type='text/javascript'>";
-			$javascript .= "jQuery(document).bind('gform_post_render', function(){";
+			$javascript .= "(function ($) {'use strict';$(function () {";
+			$javascript .= "$(document).bind('gform_post_render', function(){";
 			$javascript .= "window.setTimeout(function(){";
-			$javascript .= "alert('".$prompt.$errorAlert."');";
 			$javascript .= "window.location.hash = '#error';";
-			$javascript .= "jQuery(this).find('.validation_error').focus();";
-			$javascript .= "jQuery(this).scrollTop(jQuery('.validation_error').offset().top);";
-			$javascript .= "				}, 500);";
-			$javascript .= "});";
+			$javascript .= "$(this).find('.validation_error').focus();";
+			$javascript .= "$(this).scrollTop($('.validation_error').offset().top);";
+			$javascript .= "}, 500);";
+			$javascript .= "});});}(jQuery));	";			
 			$javascript .= "</script>";
 			
 			$message = $javascript;
-			$message .= "<div id='error'>";
-			$message .= "<div class='validation_error'>";
+			$message .= "<div id='error' aria-live='assertive' role='alert'>";
+			$message .= "<div class='validation_error' tabindex='-1'>";
 			$message .= $prompt;
 			$message .= "</div>";
 			$message .= "<ol class='validation_list'>";
@@ -92,22 +87,24 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * Replaces field content with WCAG 2.0 compliant fieldset, rather than the default orphaned labels - applied to checkboxes, radio lists and repeater lists
          */
 		public static function change_fields_content_wcag($content, $field, $value, $lead_id, $form_id){
-		if (!is_admin()) {
-		$field_type = rgar($field,"type");
-		$field_required = rgar($field,"isRequired");
-		$field_failed_valid = rgar($field,"failed_validation");
-		$field_label = rgar($field,"label");
-		$field_id = rgar($field,"id");
-		$field_page = rgar($field,"pageNumber");
-		$current_page = GFFormDisplay::get_current_page( $form_id );
+			if (!is_admin()) {
+			$field_type = rgar($field,"type");
+			$field_required = rgar($field,"isRequired");
+			$field_failed_valid = rgar($field,"failed_validation");
+			$field_label = rgar($field,"label");
+			$field_id = rgar($field,"id");
+			$field_page = rgar($field,"pageNumber");
+			$current_page = GFFormDisplay::get_current_page( $form_id );
 			
 			//radio and checkbox fields in fieldset
 			if( ("checkbox" == $field_type ) || ("radio" == $field_type) ){
 			//wrap in fieldset
-				if (true == $field_required ) {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
+				if ( true == $field_required ) {
+					// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
+					// for='input_".$form_id."_".$field_id."'
+					$content = str_replace("<label class='gfield_label'  >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				} else {
-					$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
+					$content = str_replace("<label class='gfield_label'  >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				}
 				$content .= "</fieldset>";
 			}
@@ -123,13 +120,16 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				$content = str_replace("<input type='text' id='input_".$form_id."_".$field_id."_shim' style='position:absolute;left:-999em;' onfocus='jQuery( \"#field_".$form_id."_".$field_id." table tr td:first-child input\" ).focus();' />","",$content);
 				
 				//replace 'add another row' image with button
-				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png' class='add_list_item '  title='Add another row' alt='Add a row' onclick='gformAddListItem(this, ".$maxRow.")' style='cursor:pointer; margin:0 3px;' />","<button type='button' class='add_list_item'  title='Add another row' alt='Add a row' onclick='gformAddListItem(this, ".$maxRow.")'></button>",$content);
+				$add_row = _x( 'Add a row', 'String must have same translation as found in Gravity Forms', 'gfwcag' );
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png' class='add_list_item '  title='Add another row' alt='$add_row' onclick='gformAddListItem(this, ".$maxRow.")' style='cursor:pointer; margin:0 3px;' />","<button type='button' class='add_list_item'  title='$add_row' alt='$add_row' onclick='gformAddListItem(this, ".$maxRow.")'></button>",$content);
 				
 				//replace 'remove this row' image with button - if field is visible 
-				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='Remove this row' alt='Remove this row' class='delete_list_item' style='cursor:pointer; ' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button type='button' class='delete_list_item'  title='Remove this row' alt='Remove this row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
+				// removew row 
+				$remove_row = _x( 'Remove this row', 'String must have same translation as found in Gravity Forms', 'gfwcag' );
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='Remove this row' alt='$remove_row' class='delete_list_item' style='cursor:pointer; ' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button type='button' class='delete_list_item' title='$remove_row' alt='$remove_row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
 				
 				//replace 'remove this row' image with button - if field is hidden 
-				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='Remove this row' alt='Remove this row' class='delete_list_item' style='cursor:pointer; visibility:hidden;' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button style='visibility:hidden;' type='button' class='delete_list_item'  title='Remove this row' alt='Remove this row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
+				$content = str_replace("<img src='".GFCommon::get_base_url()."/images/blankspace.png'  title='$remove_row' alt='$remove_row' class='delete_list_item' style='cursor:pointer; visibility:hidden;' onclick='gformDeleteListItem(this, ".$maxRow.")' />","<button style='visibility:hidden;' type='button' class='delete_list_item'  title='$remove_row' alt='$remove_row' onclick='gformDeleteListItem(this, ".$maxRow.")'></button>",$content);
 			}
 			
 			// add description for date field 
@@ -150,7 +150,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					$date_format = 'yyyy.mm.dd';
 				} 
 				
-				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - must be ".$date_format." format</span>",$content);
+				$content = str_replace("<label class='gfield_label'  >".$field_label."<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - " . sprintf( __( 'must be %s format', 'gfwcag' ), $date_format ) . "</span>",$content );
 				
 				// attach to aria-described-by
 				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
@@ -158,7 +158,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			
 			// add description for website field 
 			if ("website" == $field_type ){
-				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - enter a valid website URL for example http://www.google.com</span>",$content);
+				$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - ". __( 'enter a valid website URL for example http://www.google.com', 'gfwcag' ) ."</span>",$content);
 				
 				// attach to aria-described-by
 				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
@@ -202,11 +202,12 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		} // END change_fields_content_wcag
 		
 		/*
-         * Place required scripts in the footer
+         * Enqueue styles and scripts.
          */
 		public function queue_scripts($form, $is_ajax) {
-		if (!is_admin()) {
-			add_action('wp_footer', array(&$this,'css_styles'));
+			if ( !is_admin() ) {
+				//add_action( 'wp_enqueue_scripts', array( &$this,'css_styles' ) );
+				wp_enqueue_style( 'gfwcag-css', plugins_url( 'gf_wcag20_form_fields.css', __FILE__ ) );
 			}
 		} // END queue_scripts
 		
@@ -214,9 +215,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * CSS styles - remove border, margin and padding from fieldset
          */
 		public static function css_styles() {
-			?>
-			<link rel="stylesheet" type="text/css" href="<?php echo plugins_url('gf_wcag20_form_fields.css', __FILE__);?>" media="all" />
-			<?php
+			wp_enqueue_style( 'gfwcag-css', plugins_url( 'gf_wcag20_form_fields.css', __FILE__ ) );
 		}
 		
 		/*
@@ -224,16 +223,16 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          */
 		public static function admin_warnings() {
 			if ( !self::is_gravityforms_installed() ) {
-				$message = __('Requires Gravity Forms to be installed.', self::$slug);
-			} 
-			if (empty($message)) {
+				$message = printf( __( 'The plugin %1$s requires Gravity Forms to be installed.', 'gfwcag' ), self::$name );
+				$message .= "<br />";
+				$message .= printf( __( 'Please <a href="%s">download the latest version</a> of Gravity Forms and try again.', 'gfwcag' ), "http://www.gravityforms.com" );
+			} else {
 				return;
 			}
 			?>
 			<div class="error">
 				<p>
-					<?php _e('The plugin ', self::$slug); ?><strong><?php echo self::$name; ?></strong> <?php echo $message; ?><br />
-					<?php _e('Please ',self::$slug); ?><a href="http://www.gravityforms.com/"><?php _e(' download the latest version',self::$slug); ?></a><?php _e(' of Gravity Forms and try again.',self::$slug) ?>
+					<?php echo $message; ?>
 				</p>
 			</div>
 			<?php
@@ -249,4 +248,3 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 	}
     $ITSP_GF_WCAG20_Form_Fields = new ITSP_GF_WCAG20_Form_Fields();
 }
-?>
