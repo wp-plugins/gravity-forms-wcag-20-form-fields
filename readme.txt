@@ -67,6 +67,15 @@ This plugin uses jQuery to modify the form once the browser has loaded it, any l
 
 This is the	[H33: Supplementing link text with the title attribute](http://www.w3.org/TR/WCAG20-TECHS/H33.html) technique.
 
+Why not use the [C7: Using CSS to hide a portion of the link text](http://www.w3.org/TR/2014/NOTE-WCAG20-TECHS-20140916/C7) technique?
+
+I'm concerned it would have a negative consequence SEO, because:
+
+1. Search engines may down-rate your website, thinking you're attempting the black hat practice of stuffing a page with keywords that may not have any relevance to the content. 
+2. Search engines may index the links with the hidden text. For example, 'document title this link will open in a new window' instead of 'document title'.
+
+I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as accessible for everyone - which needs to take into account how it affects search engines.
+
 == Screenshots ==
 
 1. Shows the improved validation message that is displayed when the form page contains errors. Validation message describes how many errors there were on the page and a list of the fields and errors. Each error is a link to the field. This message gets the browsers 'focus' when it is loaded - allowing screen reader users easy access to the information.
