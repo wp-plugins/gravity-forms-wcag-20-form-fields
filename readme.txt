@@ -12,7 +12,7 @@ Modifies Gravity Forms form fields and improves validation so that forms meet WC
 
 == Description ==
 
-Extends the Gravity Forms plugin - modifies form fields and improves validation so that forms meet WCAG 2.0 accessibility requirements.
+Extends the [Gravity Forms](http://www.gravityforms.com/ "Gravity Forms website") plugin - modifies form fields and improves validation so that forms meet WCAG 2.0 accessibility requirements.
 
 **What does this plugin do?**
 
@@ -22,19 +22,23 @@ Extends the Gravity Forms plugin - modifies form fields and improves validation 
 * Adds HTML5 'required' attribute and aria-required='true' for required fields
 * Adds aria-describedby attributes for fields that have failed validation - providing clear instructions for screen reader users of what the field error is. Description used is the default validation message for the field, or if set, the validation message for the field.
 * Disables the Gravity Forms configured tabindex - this stops users from being able to tab between fields and on-page links.
-* Changes links in the form body, such as field descriptions or HTML fields, will be made to open in a new window. A title is added or appended to any existing title for screen reader users which reads 'this link will open in a new window'
+* Changes links in the form body, such as field descriptions or HTML fields, so they open in a new window. A title is added or appended to any existing title for screen reader users which reads 'this link will open in a new window'.
 
 **How to I use the plugin?**
 
 Simply install and activate the plugin - no configuration required.
 
-**Have a suggestion or request?**
+**Have a suggestion, comment or request?**
 
 Please leave a detailed message on the support tab. 
 
+**Let me know what you think**
+
+Please take the time to review the plugin. Your feedback shows the need for Gravity Forms to meet the WCAG 2.0 requirements natively, and will help me understand the value of this plugin.
+
 **Please note:**
 
-* Accessibility is a complicated topic and sometimes there are different opinions on how to best achieve an accessible website. Accessible forms are even harder to achieve, with many different approaches. 
+* Accessibility is a complicated topic and sometimes there are different opinions on how to best achieve an accessible website. Accessible forms are even harder to achieve, with many different approaches. If you have a suggestion, comment or request please leave a detailed message on the support tab.
 * This plugin does not cover other aspects of accessibility, such as content order, clear instructions, colour contrast etc.
 * You will also need to ensure that your websites theme is accessible. 
 
@@ -52,6 +56,16 @@ Please leave a detailed message on the support tab.
 Whilst this plugin goes a long way to taking a Gravity Form towards WCAG 2.0 compliance, there are still some things that haven't been looked at yet.
 
 If you're having troubles or even better know a solution, please leave a detailed message on the support tab.
+
+I am aware of three issues that are yet to be resolved - duplicate ID's for checkbox lists, duplicate ID's for multi-page form wrappers (the hidden pages have the same ID), and duplicate ID's for the 'Save and continue later' link/button.
+
+**Opening links in new windows - isn't that bad practice?**
+
+Typically forcing links to open in a new window is bad practice, both from a usability and accessibility point of view. However when it comes to forms there is reason enough to do this - if the user clicks on the link they are taken away from the form - loosing any data they may have provided.
+
+This plugin uses jQuery to modify the form once the browser has loaded it, any links in the form are changed to open in a new window (target='_blank'), then a title is added (or appended to the existing title) which reads 'this link will open in a new window'.
+
+This is the	[H33: Supplementing link text with the title attribute](http://www.w3.org/TR/WCAG20-TECHS/H33.html) technique.
 
 == Screenshots ==
 
