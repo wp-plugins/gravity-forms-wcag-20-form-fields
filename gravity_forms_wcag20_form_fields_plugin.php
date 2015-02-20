@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.2
+Version: 1.2.3
 Author: Adrian Gordon
 License: GPL2
 Text Domain: gfwcag
@@ -33,7 +33,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		
 		public static function change_validation_message($message, $form){
 			$referrer = $_SERVER['HTTP_REFERER'];
-		
+	
 			foreach ( $form['fields'] as $field ) {
 				$failed[] = rgget("failed_validation", $field);
 				
@@ -193,7 +193,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 						$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
 					}
 					//add screen reader only 'Required' message to asterisk
-					$content = str_replace("*</span>"," * <span class='sr-only'> Required</span></span>",$content);
+					$content = str_replace("*</span>"," * <span class='sr-only'> ".__('Required','gfwcag')."</span></span>",$content);
 				}
 			}
 			
@@ -208,6 +208,27 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			if ( !is_admin() ) {
 				//add_action( 'wp_enqueue_scripts', array( &$this,'css_styles' ) );
 				wp_enqueue_style( 'gfwcag-css', plugins_url( 'gf_wcag20_form_fields.css', __FILE__ ) );
+
+		/*
+         * Looks for links in form body (in descriptions, HTML fields etc.) 
+		 * changes them to open in a new window and adds/appends 
+		 * 'this link will open in a new window' to title for screen reader users.
+         */
+		 ?>
+			<script>
+			jQuery('.gform_body').ready(function(){
+				jQuery('.gform_page_fields a').each(function() {
+					//get the current title
+					var title = jQuery(this).attr('title');
+					//if title doesnt exist or is empty, add line otherwise append it
+						if (title == undefined || title == '') {
+								jQuery(this).attr('target', '_blank').attr('title', '<?php echo __('this link will open in a new window','gfwcag') ?>');
+							} else {
+								jQuery(this).attr('target', '_blank').attr('title', title + ' <?php echo __('- this link will open in a new window','gfwcag') ?>');
+						}
+				});
+			});
+			</script> <?php
 			}
 		} // END queue_scripts
 		

@@ -1,10 +1,10 @@
 === Gravity Forms - WCAG 2.0 form fields ===
 Contributors: ovann86
 Donate link: http://www.itsupportguides.com/
-Tags: gravity forms
+Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ Extends the Gravity Forms plugin - modifies form fields and improves validation 
 * Adds HTML5 'required' attribute and aria-required='true' for required fields
 * Adds aria-describedby attributes for fields that have failed validation - providing clear instructions for screen reader users of what the field error is. Description used is the default validation message for the field, or if set, the validation message for the field.
 * Disables the Gravity Forms configured tabindex - this stops users from being able to tab between fields and on-page links.
+* Changes links in the form body, such as field descriptions or HTML fields, will be made to open in a new window. A title is added or appended to any existing title for screen reader users which reads 'this link will open in a new window'
 
 **How to I use the plugin?**
 
@@ -58,6 +59,11 @@ If you're having troubles or even better know a solution, please leave a detaile
 2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.2.3 =
+
+* Feature: links in form body, such as field descriptions or HTML fields, will be made to open in a new window. A title is added or appended to any existing title for screen reader users which reads 'this link will open in a new window'.
+
 
 = 1.2.2 =
 
