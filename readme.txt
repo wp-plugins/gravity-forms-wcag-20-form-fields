@@ -4,7 +4,7 @@ Donate link: http://www.itsupportguides.com/
 Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.2.4
+Stable tag: 1.2.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,8 @@ Extends the [Gravity Forms](http://www.gravityforms.com/ "Gravity Forms website"
 * Adds aria-describedby attributes for fields that have failed validation - providing clear instructions for screen reader users of what the field error is. Description used is the default validation message for the field, or if set, the validation message for the field.
 * Disables the Gravity Forms configured tabindex - this stops users from being able to tab between fields and on-page links.
 * Changes links in the form body, such as field descriptions or HTML fields, so they open in a new window. A title is added or appended to any existing title for screen reader users which reads 'this link will open in a new window'.
-* Changes the 'Save and continue' link to a button - this provides better accessibility by providing 'Save and continue' as a form field - making it listed along side with the 'Previous', 'Next' and 'Submit' buttons when a screen reader user lists all form fields. e.g. JAWS + F5.
+* Improved file upload field - wrapped in field set, clearly identifies to screen reader users if any file size of file type restrictions have been set of the field.
+* Improved field instructions - if a description has been provided for the field, the field is 'described by' the description, using the aria-describedby attribute
 
 **How to I use the plugin?**
 
@@ -86,7 +87,15 @@ I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as 
 
 = 1.2.5 =
 
-* Feature: change 'Save and continue' link to a button. This provides better accessibility by providing 'Save and continue' as a form field - making it listed along side with the 'Previous', 'Next' and 'Submit' buttons when a screen reader user lists all form fields. e.g. JAWS + F5.
+* Feature: field description now included in a fields 'aria-describedby' attribute - giving screen reader users easy access to the fields description when jumping through fields and skipping page content.
+* Feature: wrap single file upload field in a field set - providing screen reader users with the label of the upload field - instead of hearing 'browse' they will hear the title of the field followed by 'file upload'
+* Feature: add 'accept' attribute to single file upload field, providing screen reader users a list of accepted file types when they select the file upload fields
+* Feature: add screen reader only text below single file upload fields, providing screen readers users a human understandable description of the file type and file size restrictions placed on the field (if specified for the field)
+* Maintenance: removed HTML 'required' attribute that was being applied by plugin - this was causing issues. Will be restored once this has been resolved. aria-required still applied to required fields, which is widely supported by assistive technologies.
+
+= 1.2.5 =
+
+* ** REMOVED ** Feature: change 'Save and continue' link to a button. This provides better accessibility by providing 'Save and continue' as a form field - making it listed along side with the 'Previous', 'Next' and 'Submit' buttons when a screen reader user lists all form fields. e.g. JAWS + F5.
 
 = 1.2.4 =
 

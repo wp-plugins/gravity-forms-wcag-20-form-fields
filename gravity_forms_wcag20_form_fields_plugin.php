@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.4
+Version: 1.2.6
 Author: Adrian Gordon
 Author URI: http://www.itsupportguides.com 
 License: GPL2
@@ -38,7 +38,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * Replaces default 'Save and continue' link with a button 
          */
 		function set_save_continue_button($form){
-			$form['save']['button']['type'] = 'button';
+			$form['save']['button']['type'] = 'text';
 			return $form;
 		}
 		
@@ -106,9 +106,24 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			$field_id = rgar($field,"id");
 			$field_page = rgar($field,"pageNumber");
 			$current_page = GFFormDisplay::get_current_page( $form_id );
+			$field_description = rgar($field,"description");
+			$field_maxFileSize = rgar($field,"maxFileSize");
+			$field_allowedExtensions = rgar($field,"allowedExtensions");
+			
+			// wrap single fileupload file field in fieldset
+			if("fileupload" == $field_type ) {
+					if ( true == $field_required ) {
+						// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
+						// for='input_".$form_id."_".$field_id."'
+						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='gfield_required'>*</span><span class='sr-only'> ".__(' File upload ','gfwcag')."</span></legend>",$content);
+					} else {
+						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='sr-only'> ".__(' File upload ','gfwcag')."</span></legend>",$content);
+					}
+					$content .= "</fieldset>";
+			}
 			
 			//radio and checkbox fields in fieldset
-			if( ("checkbox" == $field_type ) || ("radio" == $field_type) ){
+			if( ("checkbox" == $field_type ) || ("radio" == $field_type) || ("fileupload" == $filetype)){
 			//wrap in fieldset
 				if ( true == $field_required ) {
 					// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
@@ -182,7 +197,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					//add add aria-invalid='true' attribute to input
 					$content = str_replace(" name='input_"," aria-invalid='true' name='input_",$content);
 					//if aria-describedby attribute not already present
-					if (strpos(strtolower($content),'aria-describedby') !== true)  {
+					if (strpos(strtolower($content),'aria-describedby') !== false)  {
 						$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_vmessage ",$content);
 					} else { 
 						// aria-describedby attribute is already present
@@ -194,17 +209,65 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			
 				//if field is required
 				if(true == $field_required ){
-					//if HTML5 required attribute not already present
-					if (( strpos(strtolower($content),'required') !== true ) && ("checkbox" != $field_type ) )  {
+					//if HTML required attribute not already present
+					// COMMENTED OUT in version 1.2.6 until I can resolve issues are resolved with it prompting 'required' when field has been filled out correctly.
+					// aria-required=true still working and seems to provide broader support for assistive technology
+					/*	if (( strpos(strtolower($content),'required') !== true ) && ("checkbox" != $field_type ) )  {
 						//add HTML5 required attribute
 						$content = str_replace(" name='input_"," required name='input_",$content);
-					}
+					} */
 					if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) )  {
 						//add aria-required='true'
 						$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
 					}
 					//add screen reader only 'Required' message to asterisk
 					$content = str_replace("*</span>"," * <span class='sr-only'> ".__('Required','gfwcag')."</span></span>",$content);
+				}
+				
+				if(!empty($field_description)){
+				// if field has a description, link description to field using aria-describedby
+					//if aria-describedby attribute not already present
+					if (strpos(strtolower($content),'aria-describedby') !== false)  {
+						$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_dmessage ",$content);
+					} else { 
+						// aria-describedby attribute is already present
+						$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
+					}
+					//add add class for aria-describedby description message
+					$content = str_replace(" class='gfield_description"," id='field_".$form_id."_".$field_id."_dmessage' class='gfield_description",$content);
+					
+				}
+				
+				if("fileupload" == $field_type ) {
+					if(!empty($field_maxFileSize)){
+						// turn max file size to human understandable term
+						$file_limit = $field_maxFileSize. ' mega bytes';
+					}
+					if(!empty($field_allowedExtensions)){
+						// add accept attribute with comma separated list of accept file types
+						$content = str_replace(" type='file' "," type='file' accept='".$field_allowedExtensions."'",$content);
+						// turn allowed extensions into a human understandable list - remove commas and replace with spaces
+						$extensions_list = str_replace(","," ",$field_allowedExtensions);
+					}
+					
+					// only add if either max file size of extension limit specified for field
+					if(!empty($field_maxFileSize) || !empty($field_allowedExtensions) ) {
+						//if aria-describedby attribute not already present
+						if (strpos(strtolower($content),'aria-describedby') !== false)  {
+							$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_fmessage ",$content);
+						} else { 
+						// aria-describedby attribute is already present
+							$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_fmessage' name='input_",$content);
+						}
+						$content .= "<span id='field_".$form_id."_".$field_id."_fmessage' class='sr-only'>";
+						if(!empty($field_maxFileSize)) {
+							$content .= "Maximum file size - ".$file_limit.". ";
+						}
+						if(!empty($field_allowedExtensions)) {
+							$content .= "Allowed file extensions - ".$extensions_list.". ";
+						}
+						$content .= "</span>";
+					}
 				}
 			}
 			
