@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.5
+Version: 1.2.4
 Author: Adrian Gordon
 Author URI: http://www.itsupportguides.com 
 License: GPL2
@@ -30,7 +30,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				
 				add_filter('gform_validation_message', array(&$this,'change_validation_message'), 10, 2);
 				
-				add_filter('gform_pre_render', array(&$this,'set_save_continue_button'));
+				//add_filter('gform_pre_render', array(&$this,'set_save_continue_button'));
             }
         } // END __construct
 		
