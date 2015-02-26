@@ -115,9 +115,9 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					if ( true == $field_required ) {
 						// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
 						// for='input_".$form_id."_".$field_id."'
-						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='gfield_required'>*</span><span class='sr-only'> ".__(' File upload ','gfwcag')."</span></legend>",$content);
+						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'><label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span><span class='sr-only'> ".__(' File upload ','gfwcag')."</span></label></legend>",$content);
 					} else {
-						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='sr-only'> ".__(' File upload ','gfwcag')."</span></legend>",$content);
+						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'><label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='sr-only'> ".__(' File upload ','gfwcag')."</span></label></legend>",$content);
 					}
 					$content .= "</fieldset>";
 			}

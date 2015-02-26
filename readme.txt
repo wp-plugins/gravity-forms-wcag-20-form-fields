@@ -85,7 +85,7 @@ I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as 
 
 == Changelog ==
 
-= 1.2.5 =
+= 1.2.6 =
 
 * Feature: field description now included in a fields 'aria-describedby' attribute - giving screen reader users easy access to the fields description when jumping through fields and skipping page content.
 * Feature: wrap single file upload field in a field set - providing screen reader users with the label of the upload field - instead of hearing 'browse' they will hear the title of the field followed by 'file upload'
