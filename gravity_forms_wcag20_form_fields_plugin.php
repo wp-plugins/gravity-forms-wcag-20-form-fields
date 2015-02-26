@@ -192,6 +192,9 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			
 			//validation for fields in page 
 			if ($current_page == $field_page) {
+			
+			
+			
 				//if field has failed validation
 					if(true == $field_failed_valid ){
 					//add add aria-invalid='true' attribute to input
@@ -224,18 +227,20 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					$content = str_replace("*</span>"," * <span class='sr-only'> ".__('Required','gfwcag')."</span></span>",$content);
 				}
 				
-				if(!empty($field_description)){
+				if(!empty($field_description) && "Infobox" != $field_type){
 				// if field has a description, link description to field using aria-describedby
-					//if aria-describedby attribute not already present
-					if (strpos(strtolower($content),'aria-describedby') !== false)  {
-						$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_dmessage ",$content);
-					} else { 
-						// aria-describedby attribute is already present
-						$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
-					}
-					//add add class for aria-describedby description message
-					$content = str_replace(" class='gfield_description"," id='field_".$form_id."_".$field_id."_dmessage' class='gfield_description",$content);
-					
+					// dont apply to validation message - it already has an ID
+					//if (strpos(strtolower($content),'_vmessage') !== true)  {
+						//if aria-describedby attribute not already present
+						if (strpos(strtolower($content),'aria-describedby') !== false)  {
+							$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_dmessage ",$content);
+						} else { 
+							// aria-describedby attribute is already present
+							$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
+						}
+						//add add class for aria-describedby description message
+						$content = str_replace(" class='gfield_description'"," id='field_".$form_id."_".$field_id."_dmessage' class='gfield_description'",$content);
+					//}
 				}
 				
 				if("fileupload" == $field_type ) {
@@ -252,6 +257,8 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					
 					// only add if either max file size of extension limit specified for field
 					if(!empty($field_maxFileSize) || !empty($field_allowedExtensions) ) {
+						//add title attirbute to file input field
+							$content = str_replace(" type='file' "," type='file' title='".$field_label."' ",$content);
 						//if aria-describedby attribute not already present
 						if (strpos(strtolower($content),'aria-describedby') !== false)  {
 							$content = str_replace(" aria-describedby='"," aria-describedby='field_".$form_id."_".$field_id."_fmessage ",$content);
