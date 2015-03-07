@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.6
+Version: 1.2.7
 Author: Adrian Gordon
 Author URI: http://www.itsupportguides.com 
 License: GPL2
@@ -176,7 +176,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 					$date_format = 'yyyy.mm.dd';
 				} 
 				
-				$content = str_replace("<label class='gfield_label'  >".$field_label."<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - " . sprintf( __( 'must be %s format', 'gfwcag' ), $date_format ) . "</span>",$content );
+				$content = str_replace("<label class='gfield_label'  >".$field_label,"<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label." <span id='field_".$form_id."_".$field_id."_dmessage' class='sr-only'> - " . sprintf( __( 'must be %s format', 'gfwcag' ), $date_format ) . "</span>",$content );
 				
 				// attach to aria-described-by
 				$content = str_replace(" name='input_"," aria-describedby='field_".$form_id."_".$field_id."_dmessage' name='input_",$content);
