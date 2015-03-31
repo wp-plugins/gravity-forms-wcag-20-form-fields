@@ -4,7 +4,7 @@ Donate link: http://www.itsupportguides.com/
 Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 1.2.7
+Stable tag: 1.2.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,6 +84,10 @@ I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as 
 2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.2.8 =
+
+* Feature: add condition to exclude links with a class of 'target-self' from opening in a new window.
 
 = 1.2.7 =
 
