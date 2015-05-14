@@ -3,8 +3,8 @@ Contributors: ovann86
 Donate link: http://www.itsupportguides.com/
 Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
-Tested up to: 4.1
-Stable tag: 1.2.8
+Tested up to: 4.2.2
+Stable tag: 1.2.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,12 +71,22 @@ This is the	[H33: Supplementing link text with the title attribute](http://www.w
 
 Why not use the [C7: Using CSS to hide a portion of the link text](http://www.w3.org/TR/2014/NOTE-WCAG20-TECHS-20140916/C7) technique?
 
-I'm concerned it would have a negative consequence SEO, because:
+I'm concerned it would have a negative consequence on SEO, because:
 
 1. Search engines may down-rate your website, thinking you're attempting the black hat practice of stuffing a page with keywords that may not have any relevance to the content. 
 2. Search engines may index the links with the hidden text. For example, 'document title this link will open in a new window' instead of 'document title'.
 
 I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as accessible for everyone - which needs to take into account how it affects search engines.
+
+**How is the plugin tested**
+
+The plugin is tested using screen-reader software JAWS and the latest version of Internet Explorer, Firefox and Chrome.
+
+The plugin is developed using the latest version of Gravity Forms. The plugin may work in previous versions but could have mixed results. Only the latest version of Gravity Forms can be supported.
+
+The aim of the plugin is to make forms created using Gravity Forms have valid HTML and comply with WCAG 2.0 - level AA.
+
+Each change the plugin makes to a Gravity Form has been decided through research into best practice for usability and accessibility.
 
 == Screenshots ==
 
@@ -84,6 +94,13 @@ I'm willing to be convinced otherwise. But my goal is to make a Gravity Form as 
 2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.2.9 =
+
+* Fix: resolve undeclared variable issue in fieldset conditions (change $fieldtype to $field_type).
+* Fix: resolve issue with radio fields incorrectly being marked as required - each item in the radio field was being marked as required (using aria-required=true) when only the fieldset should have been. Reference: http://stackoverflow.com/questions/8509481/aria-required-in-a-radio-group= 1.2.8 
+* Fix: resolve issue with radio field 'other' option not including a label. Added screen-reader only labels for radio and input field assigned to 'other' option.
+* Fix: resolve issue with jQuery script loading before jQuery was available. Moved to footer using wp_footer action.
 
 = 1.2.8 =
 

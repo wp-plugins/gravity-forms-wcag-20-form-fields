@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms - WCAG 2.0 form fields
 Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.8
+Version: 1.2.9
 Author: Adrian Gordon
 Author URI: http://www.itsupportguides.com 
 License: GPL2
@@ -30,7 +30,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				
 				add_filter('gform_validation_message', array(&$this,'change_validation_message'), 10, 2);
 				
-				//add_filter('gform_pre_render', array(&$this,'set_save_continue_button'));
+				//add_filter('gform_pre_render', array(&$this,'set_save_continue_button')); // TO DO: currently customising Gravity Forms code, need to implement in this plugin.
             }
         } // END __construct
 		
@@ -61,18 +61,8 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			$length  = count( array_keys( $failed, "true" ));
 			$prompt  = sprintf( _n( "There was %s error found in the information you submitted", "There were %s errors found in the information you submitted", $length, 'gfwcag' ), $length );
 			
-			$javascript = "<script type='text/javascript'>";
-			$javascript .= "(function ($) {'use strict';$(function () {";
-			$javascript .= "$(document).bind('gform_post_render', function(){";
-			$javascript .= "window.setTimeout(function(){";
-			$javascript .= "window.location.hash = '#error';";
-			$javascript .= "$(this).find('.validation_error').focus();";
-			$javascript .= "$(this).scrollTop($('.validation_error').offset().top);";
-			$javascript .= "}, 500);";
-			$javascript .= "});});}(jQuery));	";			
-			$javascript .= "</script>";
+			add_action('wp_footer', array('ITSP_GF_WCAG20_Form_Fields','change_validation_message_js_script'));
 			
-			$message = $javascript;
 			$message .= "<div id='error' aria-live='assertive' role='alert'>";
 			$message .= "<div class='validation_error' tabindex='-1'>";
 			$message .= $prompt;
@@ -82,6 +72,26 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			$message .= "</ol>";
 			$message .= "</div>";
 			return $message;
+		}
+		
+		public function change_validation_message_js_script() {
+		
+		?>
+			<script type='text/javascript'>
+				(function ($) {
+					'use strict';
+					$(function () {
+						//$(document).bind('gform_post_render', function(){
+						//	window.setTimeout(function(){
+								window.location.hash = '#error';
+								$(this).find('.validation_error').focus();
+								$(this).scrollTop($('.validation_error').offset().top);
+							}, 500);
+						//});
+					//});
+				}(jQuery));	
+				</script>
+		<?php
 		}
 
 		/**
@@ -110,12 +120,30 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			$field_maxFileSize = rgar($field,"maxFileSize");
 			$field_allowedExtensions = rgar($field,"allowedExtensions");
 			
+			// adds labels to radio 'other' field - both the radio and input fields.
+			if("radio" == $field_type ) {
+				foreach($field['choices'] as $key=>$choice){
+					if (true == $choice[isOtherChoice]) {
+						$choice_position = $key;
+						// add label to radio
+						$content = str_replace("<li class='gchoice_".$form_id."_".$field_id."_".$choice_position."'><input name='input_".$field_id."' ","<li class='gchoice_".$form_id."_".$field_id."_".$choice_position."'><label id='label_".$form_id."_".$field_id."_".$choice_position."' for='choice_".$form_id."_".$field_id."_".$choice_position."' class='sr-only'>".__(' Other ','gfwcag')."</label><input name='input_".$field_id."' ",$content);
+						// add label to text input
+						$content = str_replace("<input id='input_".$form_id."_".$field_id."_other' ","<label id='label_".$form_id."_".$field_id."_other' for='input_".$form_id."_".$field_id."_other' class='sr-only'>".__(' Other ','gfwcag')."</label><input id='input_".$form_id."_".$field_id."_other' ",$content);
+						// change radio jQuery
+						$content = str_replace("jQuery(this).next('input').focus()","jQuery(this).closest('li').find('#input_43_1_other').focus()",$content);
+						// change inout jQuery - NOTE Gravity Forms code uses double quotation mark 
+						$content = str_replace("jQuery(this).prev(\"input\").attr(\"checked\", true)","jQuery(this).closest(\"li\").find(\"#choice_43_1_3\").attr(\"checked\", true)",$content);
+					}
+				}
+			}
+			
 			// wrap single fileupload file field in fieldset
+			// adds aria-required='true' if required field
 			if("fileupload" == $field_type ) {
 					if ( true == $field_required ) {
 						// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
 						// for='input_".$form_id."_".$field_id."'
-						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'><label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span><span class='sr-only'> ".__(' File upload ','gfwcag')."</span></label></legend>",$content);
+						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset aria-required='true' class='gfieldset'><legend class='gfield_label'><label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='gfield_required'>*</span><span class='sr-only'> ".__(' File upload ','gfwcag')."</span></label></legend>",$content);
 					} else {
 						$content = str_replace("<label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'><label class='gfield_label' for='input_".$form_id."_".$field_id."' >".$field_label."<span class='sr-only'> ".__(' File upload ','gfwcag')."</span></label></legend>",$content);
 					}
@@ -123,12 +151,13 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			}
 			
 			//radio and checkbox fields in fieldset
-			if( ("checkbox" == $field_type ) || ("radio" == $field_type) || ("fileupload" == $filetype)){
+			// adds aria-required='true' if required field
+			if( ("checkbox" == $field_type ) || ("radio" == $field_type) || ("fileupload" == $field_type)){
 			//wrap in fieldset
 				if ( true == $field_required ) {
 					// Gravity Forms 1.9.2 appears to no longer include for attribute on field group labels 
 					// for='input_".$form_id."_".$field_id."'
-					$content = str_replace("<label class='gfield_label'  >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='gfield_required'>*</span></legend>",$content);
+					$content = str_replace("<label class='gfield_label'  >".$field_label."<span class='gfield_required'>*</span></label>","<fieldset aria-required='true' class='gfieldset'><legend class='gfield_label'>".$field_label."<span class='gfield_required'>*</span></legend>",$content);
 				} else {
 					$content = str_replace("<label class='gfield_label'  >".$field_label."</label>","<fieldset class='gfieldset'><legend class='gfield_label'>".$field_label."</legend>",$content);
 				}
@@ -219,7 +248,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 						//add HTML5 required attribute
 						$content = str_replace(" name='input_"," required name='input_",$content);
 					} */
-					if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) )  {
+					if ( (strpos(strtolower($content),"aria-required='true'") !== true) && ("checkbox" != $field_type ) && ("radio" != $field_type ) )  {
 						//add aria-required='true'
 						$content = str_replace(" name='input_"," aria-required='true' name='input_",$content);
 					}
@@ -289,29 +318,36 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			if ( !is_admin() ) {
 				//add_action( 'wp_enqueue_scripts', array( &$this,'css_styles' ) );
 				wp_enqueue_style( 'gfwcag-css', plugins_url( 'gf_wcag20_form_fields.css', __FILE__ ) );
-
+				add_action('wp_footer', array('ITSP_GF_WCAG20_Form_Fields','queue_scripts_js_script'));
+			}
+		}  // END queue_scripts
+		
 		/*
          * Looks for links in form body (in descriptions, HTML fields etc.) 
 		 * changes them to open in a new window and adds/appends 
 		 * 'this link will open in a new window' to title for screen reader users.
          */
+		 public function queue_scripts_js_script() {
 		 ?>
-			<script>
-			jQuery('.gform_body').ready(function(){
-				jQuery('.gform_page_fields a').not('.target-self').each(function() {
-					//get the current title
-					var title = jQuery(this).attr('title');
-					//if title doesnt exist or is empty, add line otherwise append it
-						if (title == undefined || title == '') {
-								jQuery(this).attr('target', '_blank').attr('title', '<?php echo __('this link will open in a new window','gfwcag') ?>');
-							} else {
-								jQuery(this).attr('target', '_blank').attr('title', title + ' <?php echo __('- this link will open in a new window','gfwcag') ?>');
-						}
-				});
-			});
+			<script type='text/javascript'>
+			(function ($) {
+					'use strict';
+					$(function () {
+						$('.gform_body a').not('.target-self').each(function() {
+						//get the current title
+						var title = $(this).attr('title');
+						//if title doesnt exist or is empty, add line otherwise append it
+							if (title == undefined || title == '') {
+									$(this).attr('target', '_blank').attr('title', '<?php echo __('this link will open in a new window','gfwcag') ?>');
+								} else {
+									$(this).attr('target', '_blank').attr('title', title + ' <?php echo __('- this link will open in a new window','gfwcag') ?>');
+							}
+						});
+					});
+				}(jQuery));	
 			</script> <?php
-			}
-		} // END queue_scripts
+			
+		} // END queue_scripts_js_script
 		
 		/*
          * CSS styles - remove border, margin and padding from fieldset
