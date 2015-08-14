@@ -1,10 +1,10 @@
-=== Gravity Forms - WCAG 2.0 form fields ===
+=== WCAG 2.0 form fields for Gravity Forms ===
 Contributors: ovann86
 Donate link: http://www.itsupportguides.com/
 Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
 Tested up to: 4.2.2
-Stable tag: 1.2.9
+Stable tag: 1.2.11
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,12 @@ Please take the time to review the plugin. Your feedback shows the need for Grav
 * Accessibility is a complicated topic and sometimes there are different opinions on how to best achieve an accessible website. Accessible forms are even harder to achieve, with many different approaches. If you have a suggestion, comment or request please leave a detailed message on the support tab.
 * This plugin does not cover other aspects of accessibility, such as content order, clear instructions, colour contrast etc.
 * You will also need to ensure that your websites theme is accessible. 
+
+**Disclaimer**
+
+*Gravity Forms is a trademark of Rocketgenius, Inc.*
+
+*This plugins is provided “as is” without warranty of any kind, expressed or implied. The author shall not be liable for any damages, including but not limited to, direct, indirect, special, incidental or consequential damages or losses that occur out of the use or inability to use the plugin.*
 
 == Installation ==
 
@@ -94,6 +100,15 @@ Each change the plugin makes to a Gravity Form has been decided through research
 2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.2.11 =
+* Maintenance: change plugin name from 'Gravity Forms - WCAG 2.0 form fields' to 'WCAG 2.0 form fields for Gravity Forms'
+* Maintenance: change constructor so plugin load is delayed using the 'plugins_loaded' action - this ensures the plugin loads after Gravity Forms has loaded and functions correctly.
+* Maintenance: resolve various PHP errors that were appearing in debug mode, but did not affect functionality.
+
+= 1.2.10 =
+
+* Fix: change field layout for radio and checkboxes to allow a checkbox/radio field to not use a fieldset if only one option exists.
 
 = 1.2.9 =
 

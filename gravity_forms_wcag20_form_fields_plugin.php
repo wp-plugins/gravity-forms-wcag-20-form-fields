@@ -1,8 +1,9 @@
 <?php
 /*
-Plugin Name: Gravity Forms - WCAG 2.0 form fields
-Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so that they meet WCAG 2.0 accessibility requirements.
-Version: 1.2.9
+Plugin Name: WCAG 2.0 form fields for Gravity Forms
+Description: Extends the Gravity Forms plugin. Modifies radio, checkbox and repeater list fields so they meet WCAG 2.0 accessibility requirements.
+Tags: Gravity Forms, wcag, accessibility, forms
+Version: 1.2.11
 Author: Adrian Gordon
 Author URI: http://www.itsupportguides.com 
 License: GPL2
@@ -19,11 +20,20 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
          * Construct the plugin object
          */
 		 public function __construct()
-        {		
-            // register actions
-            if (self::is_gravityforms_installed()) {
-                //start plug in
-                add_filter('gform_column_input_content',  array(&$this,'change_column_add_title_wcag'), 10, 6);
+        {	
+			// register plugin functions through 'plugins_loaded' - 
+			// this delays the registration until all plugins have been loaded, ensuring it does not run before Gravity Forms is available.
+            add_action( 'plugins_loaded', array(&$this,'register_actions') );              
+            
+        } // END __construct
+		
+		/*
+         * Register plugin functions
+         */
+		function register_actions() {
+            if ((self::is_gravityforms_installed())) {
+				//start plug in
+				add_filter('gform_column_input_content',  array(&$this,'change_column_add_title_wcag'), 10, 6);
 				add_filter('gform_field_content',  array(&$this,'change_fields_content_wcag'), 10, 5);
 				add_action('gform_enqueue_scripts',  array(&$this,'queue_scripts'), 90, 3);
 				add_filter('gform_tabindex', create_function('', 'return false;'));   //disable tab-index
@@ -31,9 +41,8 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				add_filter('gform_validation_message', array(&$this,'change_validation_message'), 10, 2);
 				
 				//add_filter('gform_pre_render', array(&$this,'set_save_continue_button')); // TO DO: currently customising Gravity Forms code, need to implement in this plugin.
-            }
-        } // END __construct
-		
+			}
+		}
 		/**
          * Replaces default 'Save and continue' link with a button 
          */
@@ -44,7 +53,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		
 		public static function change_validation_message($message, $form){
 			$referrer = $_SERVER['HTTP_REFERER'];
-	
+			$error = '';
 			foreach ( $form['fields'] as $field ) {
 				$failed[] = rgget("failed_validation", $field);
 				
@@ -52,7 +61,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 				$failed_message = rgget("validation_message", $field);
 				if ( $failed_field == 1) {
 				
-				$error .= '<li><a href="'.$referrer.'#field_'.$form['id'].'_'.$field['id'].'">'.$field[label].' - '.(( "" == $field[errorMessage]) ? $failed_message:$field[errorMessage]).'</a></li>';
+				$error .= '<li><a href="'.$referrer.'#field_'.$form['id'].'_'.$field['id'].'">'.$field['label'].' - '.(( "" == $field['errorMessage']) ? $failed_message:$field['errorMessage']).'</a></li>';
 
 				}
 				
@@ -74,7 +83,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			return $message;
 		}
 		
-		public function change_validation_message_js_script() {
+		public static function change_validation_message_js_script() {
 		
 		?>
 			<script type='text/javascript'>
@@ -123,7 +132,8 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 			// adds labels to radio 'other' field - both the radio and input fields.
 			if("radio" == $field_type ) {
 				foreach($field['choices'] as $key=>$choice){
-					if (true == $choice[isOtherChoice]) {
+					$isotherchoice = isset($choice['isOtherChoice']) ? $choice['isOtherChoice'] : null;
+					if (true == $isotherchoice) {
 						$choice_position = $key;
 						// add label to radio
 						$content = str_replace("<li class='gchoice_".$form_id."_".$field_id."_".$choice_position."'><input name='input_".$field_id."' ","<li class='gchoice_".$form_id."_".$field_id."_".$choice_position."'><label id='label_".$form_id."_".$field_id."_".$choice_position."' for='choice_".$form_id."_".$field_id."_".$choice_position."' class='sr-only'>".__(' Other ','gfwcag')."</label><input name='input_".$field_id."' ",$content);
@@ -314,7 +324,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		/*
          * Enqueue styles and scripts.
          */
-		public function queue_scripts($form, $is_ajax) {
+		public static function queue_scripts($form, $is_ajax) {
 			if ( !is_admin() ) {
 				//add_action( 'wp_enqueue_scripts', array( &$this,'css_styles' ) );
 				wp_enqueue_style( 'gfwcag-css', plugins_url( 'gf_wcag20_form_fields.css', __FILE__ ) );
@@ -327,7 +337,7 @@ if (!class_exists('ITSP_GF_WCAG20_Form_Fields')) {
 		 * changes them to open in a new window and adds/appends 
 		 * 'this link will open in a new window' to title for screen reader users.
          */
-		 public function queue_scripts_js_script() {
+		 public static function queue_scripts_js_script() {
 		 ?>
 			<script type='text/javascript'>
 			(function ($) {
