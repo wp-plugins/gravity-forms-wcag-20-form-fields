@@ -3,8 +3,8 @@ Contributors: ovann86
 Donate link: http://www.itsupportguides.com/
 Tags: gravity forms, wcag, accessibility, usability
 Requires at least: 4.1
-Tested up to: 4.2.2
-Stable tag: 1.2.11
+Tested up to: 4.2.4
+Stable tag: 1.3.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,9 @@ Each change the plugin makes to a Gravity Form has been decided through research
 2. Shows list field with 'buttons' instead of images to add and delete rows - buttons are styled like the previous images but are keyboard accessible. 
 
 == Changelog ==
+
+= 1.3.0 =
+* FEATURE: Add support for multisite WordPress installations.
 
 = 1.2.11 =
 * Maintenance: change plugin name from 'Gravity Forms - WCAG 2.0 form fields' to 'WCAG 2.0 form fields for Gravity Forms'
